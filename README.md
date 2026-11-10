@@ -63,7 +63,7 @@ A backend-free, static version of the dashboard runs on GitHub Pages — no Pyth
 required. It loads a small `index.json` plus one JSON file per player on demand, so the
 whole tracking dataset is never shipped to the browser.
 
-**Live demo:** _(added after first deployment — see the "Static web build" section)_
+**Live demo:** <https://aryans15.github.io/nfl-opponent-tendencies/>
 
 The Streamlit app (below) remains the full-featured local version; the static site mirrors
 its validated calculations and model outputs.
