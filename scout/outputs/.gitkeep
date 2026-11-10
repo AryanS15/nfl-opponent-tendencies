@@ -1,0 +1,6 @@
+# This directory holds generated artifacts (feature tables, model files, audit
+# JSON). They are produced by the pipeline and are intentionally git-ignored.
+# Regenerate them with:
+#   python3 scout/build_features.py
+#   python3 scout/model_route_block.py
+#   python3 scout/audit_tracking.py

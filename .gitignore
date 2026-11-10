@@ -1,0 +1,69 @@
+# ---------------------------------------------------------------------------
+# NFL Opponent Tendencies — .gitignore
+# ---------------------------------------------------------------------------
+
+# --- Python environments & caches ---
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+env/
+venv/
+.venv/
+ENV/
+env.bak/
+venv.bak/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+*.egg-info/
+.eggs/
+build/
+dist/
+
+# --- Secrets & credentials (never commit) ---
+.env
+.env.*
+*.env
+*.pem
+*.key
+id_rsa*
+*credential*
+*secret*
+.aws/
+.netrc
+
+# --- macOS / editor noise ---
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+*.swp
+*~
+.idea/
+.vscode/
+
+# --- Source NFL dataset (DO NOT redistribute; download separately) ---
+# The official Big Data Bowl data is not ours to publish. See README.
+nfl-big-data-bowl-regional-event-data/
+*.pdf
+
+# --- Large / regenerable generated artifacts ---
+# Everything under scout/outputs is produced by the pipeline scripts and is
+# either large or derived from the non-redistributable dataset. Regenerate with
+# build_features.py / model_route_block.py (see README). Keep the folder itself.
+scout/outputs/*
+!scout/outputs/.gitkeep
+
+# Generated analysis figures (regenerate with the analysis/*.py scripts)
+analysis/figs/
+
+# Raw/derived data files anywhere
+*.parquet
+*.joblib
+# (CSV ignored broadly since our only CSVs are large generated data; add
+#  exceptions below if you introduce a small committed CSV.)
+*.csv
