@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Opponent Offensive Tendencies — NFL scouting</title>
+  <meta name="description" content="An NFL player scouting dashboard exploring WR, TE, and RB alignment, movement, and passing-play responsibilities. 2021 Weeks 1–8, sampled passing dropbacks." />
+  <!-- relative paths so the site works under the /nfl-opponent-tendencies/ Pages subpath -->
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap">
+      <h1>Opponent Offensive Tendencies</h1>
+      <p class="subtitle">Understand how opposing WRs, TEs, and RBs line up, move, and take on
+        different roles on passing plays.</p>
+      <p class="scope" id="scope-line">2021 NFL · Weeks 1–8 · Sampled passing dropbacks only.</p>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <!-- ---------------- filters ---------------- -->
+    <section class="filters" aria-label="Filters">
+      <div class="field">
+        <label for="team-select">Offensive team</label>
+        <select id="team-select"></select>
+      </div>
+      <div class="field">
+        <label for="pos-select">Position</label>
+        <select id="pos-select">
+          <option value="ALL">All (WR/TE/RB)</option>
+          <option value="WR">WR</option>
+          <option value="TE">TE</option>
+          <option value="RB">RB</option>
+          <option value="FB">FB</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="player-select">Player</label>
+        <select id="player-select"></select>
+      </div>
+      <div class="field">
+        <label for="opp-select">Opposing defense</label>
+        <select id="opp-select"></select>
+      </div>
+    </section>
+
+    <!-- ---------------- scope banner ---------------- -->
+    <section id="scope-banner" class="scope-banner" hidden></section>
+    <div id="loading" class="loading" hidden>Loading player…</div>
+
+    <!-- ---------------- matchup comparison (only when an opponent is picked) -->
+    <section id="matchup" class="card" hidden></section>
+
+    <!-- ---------------- takeaways ---------------- -->
+    <section id="takeaways" class="card" hidden>
+      <h2>🏈 What the defense should know <span id="takeaways-scope" class="muted"></span></h2>
+      <div class="takeaways-grid">
+        <div id="takeaways-observed"></div>
+        <div id="takeaways-hyp"></div>
+      </div>
+    </section>
+
+    <!-- ---------------- vs league ---------------- -->
+    <section id="vsleague" class="card" hidden>
+      <h2>How he compares to his position <span id="vsleague-n" class="muted"></span></h2>
+      <p id="vsleague-headline" class="headline"></p>
+      <div class="table-scroll"><table id="vsleague-table"></table></div>
+      <p class="muted small">League average weights each player equally, so high-volume players
+        don't dominate the baseline. Positive diff = more than the positional average.</p>
+    </section>
+
+    <!-- ---------------- observed detail ---------------- -->
+    <section id="observed" class="card" hidden>
+      <h2>Observed detail</h2>
+      <p class="muted small">Directly measured from PFF snap labels + NGS tracking. Not predictions.</p>
+      <div class="two-col">
+        <div>
+          <h3>Where he lines up</h3>
+          <div class="chart" id="align-chart"></div>
+        </div>
+        <div>
+          <h3>Route vs. block role</h3>
+          <div id="role-block"></div>
+        </div>
+      </div>
+
+      <h3>Situational route tendencies</h3>
+      <div class="tabs" id="sit-tabs">
+        <button class="tab active" data-tab="align">By alignment</button>
+        <button class="tab" data-tab="down">By down</button>
+        <button class="tab" data-tab="dd">By down &amp; distance</button>
+        <button class="tab" data-tab="form">By formation</button>
+        <button class="tab" data-tab="move">Movement</button>
+      </div>
+      <div class="tab-body" id="sit-body"></div>
+    </section>
+
+    <!-- ---------------- example plays ---------------- -->
+    <section id="plays" class="card" hidden>
+      <h2>Example plays</h2>
+      <p class="muted small">One <strong>typical</strong> play (closest to his median route depth)
+        and one clearly labelled <strong>unusual</strong> play (an outlier). Only the observed
+        snap→endpoint window is drawn. Coordinates are visualization excerpts of a non-redistributed dataset.</p>
+      <div class="tabs" id="play-tabs"></div>
+      <div id="play-body"></div>
+    </section>
+
+    <!-- ---------------- prediction ---------------- -->
+    <section id="prediction" class="card" hidden>
+      <h2>Pre-snap route-vs-block prediction</h2>
+      <p class="muted small">Estimated from pre-snap info only. Conditional on a passing dropback.</p>
+      <div id="pred-body"></div>
+      <details id="pred-detail">
+        <summary>Detailed evaluation metrics (held-out weeks 6–8)</summary>
+        <div class="table-scroll"><table id="pred-table"></table></div>
+        <p class="muted small">ROC-AUC = ranking quality (0.5 = coin flip). Brier = probability
+          error (lower better). Precision/recall at a 0.5 cutoff on the "route" class.</p>
+      </details>
+      <p class="muted small">Scope: predicts route-vs-block <strong>conditional on a passing
+        dropback</strong>. The dataset contains only dropbacks, so it cannot model run-vs-pass.</p>
+    </section>
+
+    <!-- ---------------- methodology ---------------- -->
+    <section class="card">
+      <details>
+        <summary>Methodology, data scope &amp; limitations</summary>
+        <div id="method-body">
+          <p><strong>Data:</strong> 2021 NFL, Weeks 1–8, 122 games, a sample of passing dropbacks.
+            Every play is a dropback — this describes behavior <em>on sampled dropbacks</em>, not all
+            offensive plays, and there are no designed run plays.</p>
+          <p><strong>Unit of analysis:</strong> one player on one play. Tracking frames are not
+            counted as independent samples.</p>
+          <p><strong>Alignment</strong> from PFF snap labels (validated against tracking geometry);
+            <strong>route vs block</strong> from PFF role (the model's target, never an input).</p>
+          <p><strong>Model:</strong> pre-snap inputs only, trained on weeks 1–5 and evaluated on
+            weeks 6–8, with a leakage-free historical feature. Observed facts, held-out predictions,
+            and coaching hypotheses are kept distinct throughout.</p>
+          <p><strong>Not claimed:</strong> nearest defender ≠ assigned coverage; net play yards ≠
+            individual receiving yards; no coverage/assignment is claimed to be proven effective.</p>
+          <p class="muted small">Source tracking/scouting data © NFL Next Gen Stats / Pro Football
+            Focus via the NFL Big Data Bowl. This site shows only derived aggregates and small
+            visualization excerpts; the raw dataset is not redistributed.</p>
+        </div>
+      </details>
+    </section>
+  </main>
+
+  <footer class="site-footer wrap">
+    <p>Static build of the <a href="https://github.com/AryanS15/nfl-opponent-tendencies"
+      rel="noopener">Opponent Offensive Tendencies</a> Streamlit dashboard. Observed ✅,
+      model predictions, and coaching hypotheses 🧠 are kept distinct. Flag small-sample cells.</p>
+  </footer>
+
+  <script src="./app.js"></script>
+</body>
+</html>

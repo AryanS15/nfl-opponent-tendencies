@@ -57,6 +57,19 @@ The dataset itself is **not** included in this repository (see below).
 
 ---
 
+## Live demo (static site)
+
+A backend-free, static version of the dashboard runs on GitHub Pages — no Python server
+required. It loads a small `index.json` plus one JSON file per player on demand, so the
+whole tracking dataset is never shipped to the browser.
+
+**Live demo:** _(added after first deployment — see the "Static web build" section)_
+
+The Streamlit app (below) remains the full-featured local version; the static site mirrors
+its validated calculations and model outputs.
+
+---
+
 ## Setup
 
 Requires Python 3.9+.
@@ -111,6 +124,50 @@ python3 -m streamlit run scout/dashboard.py
 
 Then open <http://localhost:8501>. Steps 2–3 generate the files the dashboard reads
 (`scout/outputs/`); run them once after downloading the data.
+
+---
+
+## Static web build (GitHub Pages)
+
+The `web/` folder is a self-contained HTML/CSS/JS site that works with no backend. It
+reads JSON exported from the same `profiles.py` calculations and model artifacts the
+Streamlit app uses.
+
+### Export the data and build the site
+
+```bash
+# generate scout/outputs/* first (see "Run" above), then:
+python3 scout/export_web.py            # writes web/data/{index.json, players/<id>.json}
+# quick subset while developing:
+python3 scout/export_web.py --limit 15
+```
+
+### Preview locally over HTTP
+
+Open it through a local server (not `file://`, so `fetch()` works):
+
+```bash
+cd web && python3 -m http.server 8080
+# then open http://localhost:8080/
+```
+
+### How it's deployed
+
+`.github/workflows/pages.yml` publishes the pre-built `web/` directory to GitHub Pages
+on every push to `main` that touches `web/`. The workflow does **not** run Python or read
+the dataset — it just uploads the committed static files. All asset paths are relative
+(`./styles.css`, `./app.js`, `./data/...`) so the site works under the
+`/<repo>/` Pages subpath.
+
+### What the static site ships (data redistribution)
+
+The source NFL/PFF tracking dataset is **not** redistributed. The site contains only:
+- **derived aggregates** (route/alignment rates, movement means, counts, model metrics), and
+- a **small number of per-player play-coordinate excerpts** used only to draw example
+  diagrams (a handful of plays per player, not the tracking dataset).
+
+This mirrors the approach of comparable public Big Data Bowl demos. The raw
+`tracking_*.csv` files are never exported or committed.
 
 ---
 
